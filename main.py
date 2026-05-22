@@ -12,6 +12,14 @@ from starlette.responses import FileResponse, JSONResponse
 from starlette.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+# 配置日志信息
+# astime 参数表示是否使用时间戳，默认为True levelname表示是否使用日志级别名称，默认为True, filename为日志文件名称, message 为日志内容
+logging.basicConfig(
+    level = logging.INFO,     # 日志级别
+    format = "&(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
+)
+
+
 # 创建FastAPI实例
 app = FastAPI(title = "汉字谜盒")
 
@@ -119,12 +127,14 @@ class CharRequest(BaseModel):
 # 定义路径操作函数
 @app.get("/")     # GET请求
 def root():
+    logging.info("访问项目首页")
     return FileResponse("static/index.html")
 
 
 # 新建对话
 @app.post("/api/sessions")
 def create_session():
+    logging.info("新建会话")
     # 1.生成会话的标识（名字）
     session_id = generate_session_id()
 
@@ -142,6 +152,8 @@ def create_session():
 @app.post("/api/chat")
 def chat(request: CharRequest):
 
+    logging.info(f"与AI交互{request.session_id}:{request.message}")
+
     # 1.加载json文件当中的会话数据
     session_path = get_session_file_name(request.session_id)
     with open(session_path, "r", encoding = "utf-8") as f:
@@ -154,6 +166,7 @@ def chat(request: CharRequest):
     messages.append({"role": "user", "content": request.message})
 
     # 3.调用AI大模型 Deepseek
+    logging.info(f"<----------->请求会话的信息:{messages}")
     response = client.chat.completions.create(
         model="deepseek-chat",
         messages=messages,
@@ -163,6 +176,7 @@ def chat(request: CharRequest):
 
     # 4.获取相应的数据
     ai_response = response.choices[0].message.content
+    logging.info(f"<------------>更新后的会话信息:{messages}")
 
 
     # 5.更新消息列表中的消息
@@ -182,6 +196,7 @@ def chat(request: CharRequest):
 # 获取会话列表
 @app.get("/api/sessions")
 def get_sessions()->ApiResponse:
+    logging.info("获取会话列表")
     # 1.获取sessions下的所有会话文件名
     session_files = os.listdir("sessions")
     # 2.获取文件名的会话ID
@@ -194,6 +209,7 @@ def get_sessions()->ApiResponse:
 # 加载指定会话信息
 @app.get("/api/sessions/{session_id}")
 def load_session(session_id: str)->ApiResponse:
+    logging.info(f"加载指定的会话{session_id}")
     # 1.获取会话文件名
     session_file = get_session_file_name(session_id)
     # 2.读取会话文件
@@ -206,6 +222,7 @@ def load_session(session_id: str)->ApiResponse:
 # 删除指定的会话
 @app.delete("/api/sessions/{session_id}")
 def delete_session(session_id: str)->ApiResponse:
+    logging.info(f"删除指定的会话{session_id}")
     # 1. 获取会话文件名
     session_file = get_session_file_name(session_id)
     # 2.删除文件
@@ -218,6 +235,7 @@ def delete_session(session_id: str)->ApiResponse:
 # 异常处理器  ---> 返回的对象类型是 Response
 @app.exception_handler(Exception)
 def handle_exception(request: Request, exc: Exception):
+    logging.error(f"发生异常:{exc}, 请求路径:{request.url}")
     return JSONResponse(content={"code":500, "message":"服务器发生异常", "data":None})
 
 # 启动服务

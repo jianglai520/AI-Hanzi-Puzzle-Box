@@ -1,7 +1,7 @@
 """
 基于python的FastAPI Web框架和原生前端HTML、CSS、JS开发的一款AI汉字谜盒Web应用
 """
-from typing import Any
+from typing import Any    # 类型注解的标准库
 from fastapi import FastAPI
 import logging
 import os
@@ -10,15 +10,14 @@ from datetime import datetime
 from openai import OpenAI
 from starlette.responses import FileResponse, JSONResponse
 from starlette.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel   # 数据验证和设计管理库
 
 # 配置日志信息
-# astime 参数表示是否使用时间戳，默认为True levelname表示是否使用日志级别名称，默认为True, filename为日志文件名称, message 为日志内容
+# asctime 参数表示是否使用时间戳，默认为True levelname表示是否使用日志级别名称，默认为True, filename为日志文件名称, message 为日志内容
 logging.basicConfig(
-    level = logging.INFO,     # 日志级别
+    level = logging.INFO,     # 日志级别：INFO,确认程序正常运行
     format = "&(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
 )
-
 
 # 创建FastAPI实例
 app = FastAPI(title = "汉字谜盒")
@@ -240,7 +239,7 @@ def handle_exception(request: Request, exc: Exception):
 
 # 启动服务
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn    # ASGI服务器，用于运行异步Web应用
     uvicorn.run(app, host = "127.0.0.1", port = 8000, access_log = True)
 
 

@@ -8,6 +8,7 @@ import os
 import json
 from datetime import datetime
 from openai import OpenAI
+from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
 from starlette.staticfiles import StaticFiles
 from pydantic import BaseModel   # 数据验证和设计管理库
@@ -16,7 +17,7 @@ from pydantic import BaseModel   # 数据验证和设计管理库
 # asctime 参数表示是否使用时间戳，默认为True levelname表示是否使用日志级别名称，默认为True, filename为日志文件名称, message 为日志内容
 logging.basicConfig(
     level = logging.INFO,     # 日志级别：INFO,确认程序正常运行
-    format = "&(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
+    format = "%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
 )
 
 # 创建FastAPI实例
